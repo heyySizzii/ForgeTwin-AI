@@ -1,51 +1,29 @@
-import type { GpuTelemetry } from "../types/telemetry";
+export function getGPUInfo() {
+  const canvas = document.createElement("canvas");
 
-export function getGpuTelemetry(): GpuTelemetry {
-  try {
-    const canvas = document.createElement("canvas");
+  const gl =
+    (canvas.getContext("webgl") as WebGLRenderingContext | null) ??
+    (canvas.getContext("experimental-webgl") as WebGLRenderingContext | null);
 
-    const gl =
-      canvas.getContext("webgl") ??
-      canvas.getContext("experimental-webgl");
-
-    if (!gl) {
-      return {
-        available: false,
-        vendor: "Unavailable",
-        renderer: "WebGL unavailable"
-      };
-    }
-
-    const debugInfo = gl.getExtension(
-      "WEBGL_debug_renderer_info"
-    );
-
-    const vendor = debugInfo
-      ? String(
-          gl.getParameter(
-            debugInfo.UNMASKED_VENDOR_WEBGL
-          )
-        )
-      : String(gl.getParameter(gl.VENDOR));
-
-    const renderer = debugInfo
-      ? String(
-          gl.getParameter(
-            debugInfo.UNMASKED_RENDERER_WEBGL
-          )
-        )
-      : String(gl.getParameter(gl.RENDERER));
-
+  if (!gl) {
     return {
-      available: true,
-      vendor,
-      renderer
-    };
-  } catch {
-    return {
-      available: false,
-      vendor: "Unavailable",
-      renderer: "Unavailable"
+      vendor: "Unknown",
+      renderer: "WebGL not supported",
     };
   }
+
+  const debugInfo = gl.getExtension("WEBGL_debug_renderer_info");
+
+  const vendor = debugInfo
+    ? gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL)
+    : "Unknown";
+
+  const renderer = debugInfo
+    ? gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL)
+    : "Unknown";
+
+  return {
+    vendor: String(vendor),
+    renderer: String(renderer),
+  };
 }
